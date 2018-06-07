@@ -32,7 +32,13 @@ function createChildViewHandler(ChildViewOrPath, ParentViewOrPath, options) {
 
 function getView(ViewOrPath) {
   if (typeof ViewOrPath === 'string') {
-    return import(`../views/${ViewOrPath}`);
+    return import(`../views/${ViewOrPath}`)
+      .then((result) => {
+        if (result.default) {
+          return result.default;
+        }
+        return result;
+      });
   } else {
     return Promise.resolve(ViewOrPath);
   }

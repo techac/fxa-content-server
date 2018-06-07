@@ -35,11 +35,10 @@ const Metrics = require('./metrics');
 const Notifier = require('./channels/notifier');
 const NullChannel = require('./channels/null');
 const OAuthClient = require('./oauth-client');
-const OAuthRelier = require('../models/reliers/oauth');
 const p = require('./promise');
 const ProfileClient = require('./profile-client');
 const RefreshObserver = require('../models/refresh-observer');
-const Relier = require('../models/reliers/relier');
+const reliers = require('../models/reliers/index');
 const Router = require('./router');
 const SameBrowserVerificationModel = require('../models/verification/same-browser');
 const ScreenInfo = require('./screen-info');
@@ -47,7 +46,6 @@ const SentryMetrics = require('./sentry');
 const Session = require('./session');
 const Storage = require('./storage');
 const StorageMetrics = require('./storage-metrics');
-const SyncRelier = require('../models/reliers/sync');
 const Translator = require('./translator');
 const UniqueUserId = require('../models/unique-user-id');
 const Url = require('./url');
@@ -247,7 +245,6 @@ Start.prototype = {
 
   initializeRelier () {
     if (! this._relier) {
-      let relier;
       const context = this._getContext();
 
       // The order of the checks is important. The OAuth check
@@ -259,32 +256,40 @@ Start.prototype = {
       // as the OAuth check - when users sign up for Sync
       // and verify in a 2nd browser, all we have to know the user
       // is completing a Sync flow is `service=sync`.
-      if (this._isOAuth()) {
-        relier = new OAuthRelier({ context }, {
-          config: this._config,
-          isVerification: this._isVerification(),
-          oAuthClient: this._oAuthClient,
-          sentryMetrics: this._sentryMetrics,
-          session: Session,
-          window: this._window
-        });
-      } else if (this._isServiceSync()) {
-        relier = new SyncRelier({ context }, {
-          isVerification: this._isVerification(),
-          sentryMetrics: this._sentryMetrics,
-          translator: this._translator,
-          window: this._window
-        });
-      } else {
-        relier = new Relier({ context }, {
-          isVerification: this._isVerification(),
-          sentryMetrics: this._sentryMetrics,
-          window: this._window
-        });
-      }
-
-      this._relier = relier;
-      return relier.fetch();
+      return Promise.resolve().then(() => {
+        if (this._isOAuth()) {
+          return reliers.get('oauth').then(OAuthRelier => {
+            return new OAuthRelier({ context }, {
+              config: this._config,
+              isVerification: this._isVerification(),
+              oAuthClient: this._oAuthClient,
+              sentryMetrics: this._sentryMetrics,
+              session: Session,
+              window: this._window
+            });
+          });
+        } else if (this._isServiceSync()) {
+          return reliers.get('sync').then(SyncRelier => {
+            return new SyncRelier({ context }, {
+              isVerification: this._isVerification(),
+              sentryMetrics: this._sentryMetrics,
+              translator: this._translator,
+              window: this._window
+            });
+          });
+        } else {
+          return reliers.get('relier').then(Relier => {
+            return new Relier({ context }, {
+              isVerification: this._isVerification(),
+              sentryMetrics: this._sentryMetrics,
+              window: this._window
+            });
+          });
+        }
+      }).then((relier) => {
+        this._relier = relier;
+        return relier.fetch();
+      });
     }
   },
 
@@ -314,26 +319,27 @@ Start.prototype = {
         context = this._getContext();
       }
 
-      const Constructor = authBrokers.get(context);
-      this._authenticationBroker = new Constructor({
-        assertionLibrary: this._assertionLibrary,
-        fxaClient: this._fxaClient,
-        iframeChannel: this._iframeChannel,
-        isVerificationSameBrowser: this._isVerificationSameBrowser(),
-        metrics: this._metrics,
-        notificationChannel: this._notificationChannel,
-        notifier: this._notifier,
-        oAuthClient: this._oAuthClient,
-        relier: this._relier,
-        session: Session,
-        window: this._window
+      return authBrokers.get(context).then((Constructor) => {
+        this._authenticationBroker = new Constructor({
+          assertionLibrary: this._assertionLibrary,
+          fxaClient: this._fxaClient,
+          iframeChannel: this._iframeChannel,
+          isVerificationSameBrowser: this._isVerificationSameBrowser(),
+          metrics: this._metrics,
+          notificationChannel: this._notificationChannel,
+          notifier: this._notifier,
+          oAuthClient: this._oAuthClient,
+          relier: this._relier,
+          session: Session,
+          window: this._window
+        });
+
+        this._authenticationBroker.on('error', this.captureError.bind(this));
+
+        this._metrics.setBrokerType(this._authenticationBroker.type);
+
+        return this._authenticationBroker.fetch();
       });
-
-      this._authenticationBroker.on('error', this.captureError.bind(this));
-
-      this._metrics.setBrokerType(this._authenticationBroker.type);
-
-      return this._authenticationBroker.fetch();
     }
   },
 

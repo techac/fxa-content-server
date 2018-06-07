@@ -38,7 +38,9 @@ define(function (require, exports, module) {
     },
 
     _returnToSettings () {
-      this.navigate('settings');
+      if (! this._hasNavigated) {
+        this.navigate('settings');
+      }
     },
 
     onModalCancel () {

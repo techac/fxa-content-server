@@ -17,21 +17,21 @@ const webpackConfig = {
     appDependencies: [
       'lib/jquery',
       'backbone',
-      'canvasToBlob',
+      /*'canvasToBlob',*/
       'cocktail-lib',
       'duration',
       'es6-promise',
       'fxaCheckbox',
       'jquery',
-      'mailcheck',
+      /*'mailcheck',
       'js-md5',
       'modal',
-      'raven',
+      'raven',*/
       'speed-trap',
       'ua-parser-js',
       'uuid',
       'vat',
-      'webrtc',
+      //'webrtc',
     ],
     head: './head/boot.js'
   },

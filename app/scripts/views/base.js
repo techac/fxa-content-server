@@ -814,12 +814,12 @@ define(function (require, exports, module) {
         this.logError(nextViewData.error);
       }
 
+      this._hasNavigated = true;
       this.notifier.trigger('navigate', {
         nextViewData: nextViewData,
         routerOptions: routerOptions,
         url: url
       });
-      this._hasNavigated = true;
     },
 
     /**

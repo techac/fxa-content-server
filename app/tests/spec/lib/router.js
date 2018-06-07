@@ -377,10 +377,10 @@ define(function (require, exports, module) {
         assert.isFunction(routeHandler);
         assert.isFalse(router.showView.called);
 
-        routeHandler.call(router);
-
-        assert.isTrue(
-          router.showView.calledWith(View, viewConstructorOptions));
+        return routeHandler.call(router).then(() => {
+          assert.isTrue(
+            router.showView.calledWith(View, viewConstructorOptions));
+        });
       });
     });
 
@@ -401,10 +401,10 @@ define(function (require, exports, module) {
         assert.isFunction(routeHandler);
         assert.isFalse(router.showChildView.called);
 
-        routeHandler.call(router);
-
-        assert.isTrue(router.showChildView.calledWith(
-          ChildView, ParentView, viewConstructorOptions));
+        return routeHandler.call(router).then(() => {
+          assert.isTrue(router.showChildView.calledWith(
+            ChildView, ParentView, viewConstructorOptions));
+        });
       });
     });
 
@@ -416,20 +416,24 @@ define(function (require, exports, module) {
       describe('default flow', () => {
         it('shows the SignUpView', () => {
           sinon.stub(router, 'getCurrentViewModel').callsFake(() => new Backbone.Model());
-          router.onSignUp();
-          assert.isTrue(router.showView.calledOnce);
-          assert.isTrue(router.showView.calledWith(SignUpView));
-          assert.isFalse(router.canGoBack());
+          return router.onSignUp()
+            .then(() => {
+              assert.isTrue(router.showView.calledOnce);
+              assert.isTrue(router.showView.calledWith(SignUpView));
+              assert.isFalse(router.canGoBack());
+            });
         });
       });
 
       describe('email-first flow', () => {
         it('shows the SignUpPasswordView', () => {
           notifier.trigger('email-first-flow');
-          router.onSignUp();
-          assert.isTrue(router.showView.calledOnce);
-          assert.isTrue(router.showView.calledWith(SignUpPasswordView));
-          assert.isTrue(router.canGoBack());
+          return router.onSignUp()
+            .then(() => {
+              assert.isTrue(router.showView.calledOnce);
+              assert.isTrue(router.showView.calledWith(SignUpPasswordView));
+              assert.isTrue(router.canGoBack());
+            });
         });
       });
     });
@@ -442,20 +446,24 @@ define(function (require, exports, module) {
       describe('default flow', () => {
         it('shows the SignInView', () => {
           sinon.stub(router, 'getCurrentViewModel').callsFake(() => new Backbone.Model());
-          router.onSignIn();
-          assert.isTrue(router.showView.calledOnce);
-          assert.isTrue(router.showView.calledWith(SignInView));
-          assert.isFalse(router.canGoBack());
+          return router.onSignIn()
+            .then(() => {
+              assert.isTrue(router.showView.calledOnce);
+              assert.isTrue(router.showView.calledWith(SignInView));
+              assert.isFalse(router.canGoBack());
+            });
         });
       });
 
       describe('email-first flow', () => {
         it('shows the SignInPasswordView', () => {
           notifier.trigger('email-first-flow');
-          router.onSignIn();
-          assert.isTrue(router.showView.calledOnce);
-          assert.isTrue(router.showView.calledWith(SignInPasswordView));
-          assert.isTrue(router.canGoBack());
+          return router.onSignIn()
+            .then(() => {
+              assert.isTrue(router.showView.calledOnce);
+              assert.isTrue(router.showView.calledWith(SignInPasswordView));
+              assert.isTrue(router.canGoBack());
+            });
         });
       });
     });

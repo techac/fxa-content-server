@@ -8,80 +8,42 @@
  * it maps context strings to auth broker constructors.
  */
 
-define(function (require, exports, module) {
-  'use strict';
+import Constants from '../../lib/constants';
 
-  const Constants = require('../../lib/constants');
+const AUTH_BROKERS = {
+  /* eslint-disable sorting/sort-object-props */
+  [Constants.FX_SYNC_CONTEXT]: 'fx-sync',
+  [Constants.FX_DESKTOP_V1_CONTEXT]: 'fx-desktop-v1',
+  [Constants.FX_DESKTOP_V2_CONTEXT]: 'fx-desktop-v2',
+  [Constants.FX_DESKTOP_V3_CONTEXT]: 'fx-desktop-v3',
+  [Constants.FX_FENNEC_V1_CONTEXT]: 'fx-fennec-v1',
+  [Constants.FX_FIRSTRUN_V1_CONTEXT]: 'fx-firstrun-v1',
+  [Constants.FX_FIRSTRUN_V2_CONTEXT]: 'fx-firstrun-v2',
+  [Constants.FX_IOS_V1_CONTEXT]: 'fx-ios-v1',
+  [Constants.MOBILE_ANDROID_V1_CONTEXT]: 'mob-android-v1',
+  [Constants.MOBILE_IOS_V1_CONTEXT]: 'mob-ios-v1',
+  [Constants.OAUTH_CONTEXT]: 'oauth-redirect',
+  [Constants.OAUTH_CHROME_ANDROID_CONTEXT]: 'oauth-redirect-chrome-android',
+  [Constants.CONTENT_SERVER_CONTEXT]: 'web',
+  /* eslint-enable sorting/sort-object-props */
+};
 
-  const AUTH_BROKERS = [
-    /* eslint-disable sorting/sort-object-props */
-    {
-      context: Constants.FX_SYNC_CONTEXT,
-      Constructor: require('../auth_brokers/fx-sync')
-    },
-    {
-      context: Constants.FX_DESKTOP_V1_CONTEXT,
-      Constructor: require('../auth_brokers/fx-desktop-v1')
-    },
-    {
-      context: Constants.FX_DESKTOP_V2_CONTEXT,
-      Constructor: require('../auth_brokers/fx-desktop-v2')
-    },
-    {
-      context: Constants.FX_DESKTOP_V3_CONTEXT,
-      Constructor: require('../auth_brokers/fx-desktop-v3')
-    },
-    {
-      context: Constants.FX_FENNEC_V1_CONTEXT,
-      Constructor: require('../auth_brokers/fx-fennec-v1')
-    },
-    {
-      context: Constants.FX_FIRSTRUN_V1_CONTEXT,
-      Constructor: require('../auth_brokers/fx-firstrun-v1')
-    },
-    {
-      context: Constants.FX_FIRSTRUN_V2_CONTEXT,
-      Constructor: require('../auth_brokers/fx-firstrun-v2')
-    },
-    {
-      context: Constants.FX_IOS_V1_CONTEXT,
-      Constructor: require('../auth_brokers/fx-ios-v1')
-    },
-    {
-      context: Constants.MOBILE_ANDROID_V1_CONTEXT,
-      Constructor: require('../auth_brokers/mob-android-v1')
-    },
-    {
-      context: Constants.MOBILE_IOS_V1_CONTEXT,
-      Constructor: require('../auth_brokers/mob-ios-v1')
-    },
-    {
-      context: Constants.OAUTH_CONTEXT,
-      Constructor: require('../auth_brokers/oauth-redirect')
-    },
-    {
-      context: Constants.OAUTH_CHROME_ANDROID_CONTEXT,
-      Constructor: require('../auth_brokers/oauth-redirect-chrome-android').default
-    },
-    {
-      context: Constants.CONTENT_SERVER_CONTEXT,
-      Constructor: require('../auth_brokers/web')
-    }
-    /* eslint-enable sorting/sort-object-props */
-  ].reduce((authBrokers, authBroker) => {
-    authBrokers[authBroker.context] = authBroker.Constructor;
-    return authBrokers;
-  }, {});
-
-  module.exports = {
-    /**
-     * Return the appropriate auth broker constructor for the given context.
-     *
-     * @param {String} context
-     * @returns {Function} Constructor
-     */
-    get (context) {
-      return AUTH_BROKERS[context] || require('../auth_brokers/web');
-    }
-  };
-});
+module.exports = {
+  /**
+   * Return the appropriate auth broker constructor for the given context.
+   *
+   * @param {String} context
+   * @returns {Promise} resolves to broker
+   */
+  get (context) {
+    const path = AUTH_BROKERS[context] || AUTH_BROKERS[Constants.CONTENT_SERVER_CONTEXT];
+    return import(`../auth_brokers/${path}`).then(result => {
+      // dynamic imports do not return the `default` property
+      // by default, rather they return the top level module with a `default` property.
+      if (result.default) {
+        return result.default;
+      }
+      return result;
+    });
+  }
+};
