@@ -116,6 +116,11 @@ export default {
       return false;
     }
 
+    console.log('bounced', this.model.get('boundedEmail'));
+    if (suggestedEmail === this.model.get('bouncedEmail')) {
+      return false;
+    }
+
     const prefillEmail = this.getPrefillEmail();
     if (! prefillEmail) {
       return true;

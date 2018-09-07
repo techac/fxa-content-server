@@ -25,17 +25,24 @@ module.exports = (options = {}) => {
     dependsOn: [ ExperimentMixin ],
 
     beforeRender () {
+      let redirectTo;
+
       if (this.relier.get('action') === 'email' && options.treatmentPathname) {
-        this.replaceCurrentPage(options.treatmentPathname);
+        redirectTo = options.treatmentPathname;
       } else if (this.isEmailFirstForced() && options.treatmentPathname) {
         // no longer experimental, the user is in this flow.
-        this.replaceCurrentPage(options.treatmentPathname);
+        redirectTo = options.treatmentPathname;
       } else if (this.isInEmailFirstExperiment()) {
         const experimentGroup = this.getEmailFirstExperimentGroup();
         this.createExperiment(EXPERIMENT_NAME, experimentGroup);
         if (experimentGroup === 'treatment' && options.treatmentPathname) {
-          this.replaceCurrentPage(options.treatmentPathname);
+          redirectTo = options.treatmentPathname;
         }
+      }
+
+      if (redirectTo) {
+        console.log('redirecting to', redirectTo, this.model.toJSON());
+        this.replaceCurrentPage(redirectTo, this.model.toJSON());
       }
     },
 

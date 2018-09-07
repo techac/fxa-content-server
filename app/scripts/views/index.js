@@ -8,6 +8,7 @@
  *
  * @module views/index
  */
+import AuthErrors from '../lib/auth-errors';
 import CachedCredentialsMixin from './mixins/cached-credentials-mixin';
 import Cocktail from 'cocktail';
 import CoppaMixin from './mixins/coppa-mixin';
@@ -54,6 +55,14 @@ class IndexView extends FormView {
     }
   }
 
+  afterVisible () {
+    if (this.model.get('bouncedEmail')) {
+      this.$('input[type=email]').val(this.model.get('bouncedEmail'));
+      this.showValidationError('input[type=email]',
+        AuthErrors.toError('SIGNUP_EMAIL_BOUNCE'));
+    }
+  }
+
   shouldUseEmailFirstFlow () {
     return this.isInEmailFirstExperimentGroup('treatment') ||
            this.isEmailFirstForced('treatment') ||
@@ -72,6 +81,8 @@ class IndexView extends FormView {
       // shows the email-first template, the prefill email was set in beforeRender
     } else if (relierEmail) {
       return this.checkEmail(relierEmail);
+    } else if (this.model.get('bouncedEmail')) {
+      // show the emial-first
     } else if (this.allowSuggestedAccount(suggestedAccount)) {
       this.replaceCurrentPage('signin', {
         account: suggestedAccount
@@ -84,6 +95,43 @@ class IndexView extends FormView {
     const email = this.getElementValue('input[type=email]');
 
     return this.checkEmail(email);
+  }
+
+  isValidEnd () {
+    if (this._isEmailSameAsBouncedEmail()) {
+      return false;
+    }
+
+    if (this._isEmailFirefoxDomain()) {
+      return false;
+    }
+
+    return super.isValidEnd();
+  }
+
+  showValidationErrorsEnd () {
+    if (this._isEmailSameAsBouncedEmail()) {
+      this.showValidationError('input[type=email]',
+        AuthErrors.toError('DIFFERENT_EMAIL_REQUIRED'));
+    } else if (this._isEmailFirefoxDomain()) {
+      this.showValidationError('input[type=email]',
+        AuthErrors.toError('DIFFERENT_EMAIL_REQUIRED_FIREFOX_DOMAIN'));
+    }
+  }
+
+  _isEmailSameAsBouncedEmail () {
+    var bouncedEmail = this.model.get('bouncedEmail');
+
+    return bouncedEmail &&
+           bouncedEmail === this.getElementValue('input[type=email]');
+  }
+
+  _isEmailFirefoxDomain () {
+    var email = this.getElementValue('.email');
+
+    // "@firefox" or "@firefox.com" email addresses are not valid
+    // at this time, therefore block the attempt.
+    return /@firefox(\.com)?$/.test(email);
   }
 
   /**

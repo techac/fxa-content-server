@@ -81,10 +81,12 @@ module.exports = {
     // Redirect them to the sign up page with an error notice.
     if (AuthErrors.is(err, 'SIGNUP_EMAIL_BOUNCE')) {
       if (this.isSignUp()) {
-        this.navigate('signup', {
+        console.log('signup');
+        this.navigate('/', {
           bouncedEmail: account.get('email')
         });
       } else {
+        console.log('signin');
         this.navigate('signin_bounced', account.pick('email'));
       }
     } else if (AuthErrors.is(err, 'UNEXPECTED_ERROR') ||

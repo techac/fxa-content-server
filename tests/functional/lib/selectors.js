@@ -103,6 +103,7 @@ module.exports = {
     LINK_SUGGEST_SYNC: '#suggest-sync a',
     SUBMIT: 'button[type="submit"]',
     SUB_HEADER: '#fxa-enter-email-header .service',
+    TOOLTIP_BOUNCED_EMAIL: '.tooltip',
   },
   FORCE_AUTH: {
     EMAIL: 'input[type=email]',
@@ -190,9 +191,9 @@ module.exports = {
     TOOLTIP: '.tooltip',
   },
   SIGNIN_BOUNCED: {
-    BACK: '#back',
     CREATE_ACCOUNT: '#create-account',
     HEADER: '#fxa-signin-bounced-header',
+    LINK_SIGNIN: 'a[href="/signin"]',
     SUPPORT: '#support'
   },
   SIGNIN_COMPLETE: {
