@@ -133,6 +133,8 @@ module.exports = {
 
   UTM_SOURCE_EMAIL: 'email',
 
-  RECOVERY_KEY_LENGTH: 16
+  RECOVERY_KEY_LENGTH: 16,
+
+  TWO_STEP_AUTHENTICATION_ACR: 'AAL2'
 };
 /*eslint-enable sorting/sort-object-props*/
