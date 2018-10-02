@@ -95,6 +95,10 @@ define(function (require, exports, module) {
       errno: 119,
       message: 'Stale authentication timestamp'
     },
+    MISMATCH_ACR: {
+      errno: 120,
+      message: 'Mismatched ACR'
+    },
     SERVICE_UNAVAILABLE: {
       errno: 998,
       message: t('System unavailable, try again soon')

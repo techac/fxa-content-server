@@ -32,14 +32,16 @@ define(function (require, exports, module) {
     },
 
     /**
+     * Use an assertion to get an OAuth code.
      *
      * @param {Object} params
+     * @param {String} [params.acr_values]
      * @param {String} params.assertion
      * @param {String} params.client_id
      * @param {String} params.redirect_uri
      * @param {String} params.scope
      * @param {String} params.state
-     * @returns {Promise}
+     * @returns {Promise} Resolves with the OAuth code on success.
      */
     getCode: function getCode(params) {
       return this._request('post', GET_CODE, params);

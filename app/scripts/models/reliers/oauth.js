@@ -57,7 +57,7 @@ var VERIFICATION_INFO_SCHEMA = {
 var OAuthRelier = Relier.extend({
   defaults: _.extend({}, Relier.prototype.defaults, {
     accessType: null,
-    acrValues: null,
+    acrValues: undefined, // acrValues has to be undefined to avoid `null` being sent to the OAuth server.
     clientId: null,
     context: Constants.OAUTH_CONTEXT,
     keysJwk: null,
