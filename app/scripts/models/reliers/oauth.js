@@ -26,6 +26,7 @@ var SIGNIN_SIGNUP_QUERY_PARAM_SCHEMA = {
   access_type: Vat.accessType().renameTo('accessType'),
   acr_values: Vat.string().renameTo('acrValues'),
   action: Vat.action(),
+  app_instance_id: Vat.appInstanceId().renameTo('appInstanceId'),
   client_id: Vat.clientId().required().renameTo('clientId'),
   code_challenge: Vat.codeChallenge().renameTo('codeChallenge'),
   code_challenge_method: Vat.codeChallengeMethod().renameTo('codeChallengeMethod'),
@@ -42,6 +43,7 @@ var VERIFICATION_INFO_SCHEMA = {
   access_type: Vat.accessType().renameTo('accessType'),
   acr_values: Vat.string().renameTo('acrValues'),
   action: Vat.string().min(1),
+  app_instance_id: Vat.appInstanceId().renameTo('appInstanceId'),
   client_id: Vat.clientId().required().renameTo('clientId'),
   prompt: Vat.prompt(),
   redirect_uri: Vat.url().renameTo('redirectUri'),
@@ -58,6 +60,7 @@ var OAuthRelier = Relier.extend({
   defaults: _.extend({}, Relier.prototype.defaults, {
     accessType: null,
     acrValues: null,
+    appInstanceId: null,
     clientId: null,
     context: Constants.OAUTH_CONTEXT,
     keysJwk: null,
